@@ -209,6 +209,91 @@
             display: block;
         }
 
+        /* Área oculta para captura con texto completo */
+        #captureArea {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 1000px;
+            background: white;
+            border: 4px solid #000;
+            border-radius: 15px;
+            padding: 40px;
+        }
+
+        .capture-titulo {
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 35px;
+            color: #333;
+            font-style: italic;
+            letter-spacing: 0.5px;
+        }
+
+        .capture-columnas {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 25px;
+        }
+
+        .capture-columna {
+            text-align: center;
+        }
+
+        .capture-columna h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .capture-columna-veo h2 {
+            color: #4CAF50;
+        }
+
+        .capture-columna-pienso h2 {
+            color: #2196F3;
+        }
+
+        .capture-columna-pregunta h2 {
+            color: #FF9800;
+        }
+
+        .capture-icono {
+            font-size: 60px;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .capture-contenido {
+            text-align: left;
+            min-height: 220px;
+            padding: 15px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            font-family: 'Arial', sans-serif;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .capture-columna-veo .capture-contenido {
+            border-color: #4CAF50;
+        }
+
+        .capture-columna-pienso .capture-contenido {
+            border-color: #2196F3;
+        }
+
+        .capture-columna-pregunta .capture-contenido {
+            border-color: #FF9800;
+        }
+
         @media (max-width: 768px) {
             .columnas {
                 grid-template-columns: 1fr;
@@ -266,6 +351,9 @@
             </div>
         </div>
 
+        <!-- Área oculta para captura (se genera dinámicamente) -->
+        <div id="captureArea"></div>
+
         <!-- Botones de acción -->
         <div class="botones">
             <button class="btn-descargar" onclick="descargarPNG()">⬇️ Descargar como PNG</button>
@@ -297,33 +385,57 @@
             indicador.classList.add('activo');
             btnDescargar.disabled = true;
 
-            const elemento = document.getElementById('captura');
+            // Crear la estructura en el área de captura oculta
+            const captureArea = document.getElementById('captureArea');
+            captureArea.innerHTML = `
+                <h2 class="capture-titulo">¿QUÉ APRENDISTE SOBRE DISCRIMINACIÓN?</h2>
+                <div class="capture-columnas">
+                    <div class="capture-columna capture-columna-veo">
+                        <div class="capture-icono">👀</div>
+                        <h2>VEO</h2>
+                        <div class="capture-contenido">${veo || ''}</div>
+                    </div>
+                    <div class="capture-columna capture-columna-pienso">
+                        <div class="capture-icono">💭</div>
+                        <h2>PIENSO</h2>
+                        <div class="capture-contenido">${pienso || ''}</div>
+                    </div>
+                    <div class="capture-columna capture-columna-pregunta">
+                        <div class="capture-icono">❓</div>
+                        <h2>ME PREGUNTO</h2>
+                        <div class="capture-contenido">${pregunta || ''}</div>
+                    </div>
+                </div>
+            `;
 
-            html2canvas(elemento, {
-                backgroundColor: '#ffffff',
-                scale: 2,
-                logging: false,
-                allowTaint: true,
-                useCORS: true,
-                width: elemento.offsetWidth,
-                height: elemento.offsetHeight
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.href = canvas.toDataURL('image/png');
-                link.download = 'Rutina_de_Pensamiento.png';
-                link.click();
+            // Esperar un momento para que se renderice y luego capturar
+            setTimeout(() => {
+                html2canvas(captureArea, {
+                    backgroundColor: '#ffffff',
+                    scale: 2,
+                    logging: false,
+                    allowTaint: true,
+                    useCORS: true,
+                    width: 1000,
+                    height: captureArea.offsetHeight
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL('image/png');
+                    link.download = 'Rutina_de_Pensamiento.png';
+                    link.click();
 
-                // Ocultar indicador y reactivar botón
-                indicador.classList.remove('activo');
-                btnDescargar.disabled = false;
-                
-                alert('✅ ¡Tu archivo ha sido descargado exitosamente!');
-            }).catch(error => {
-                console.error('Error al descargar:', error);
-                alert('❌ Hubo un error al descargar. Por favor, intenta de nuevo.');
-                indicador.classList.remove('activo');
-                btnDescargar.disabled = false;
-            });
+                    // Ocultar indicador y reactivar botón
+                    indicador.classList.remove('activo');
+                    btnDescargar.disabled = false;
+                    
+                    alert('✅ ¡Tu archivo ha sido descargado exitosamente!');
+                }).catch(error => {
+                    console.error('Error al descargar:', error);
+                    alert('❌ Hubo un error al descargar. Por favor, intenta de nuevo.');
+                    indicador.classList.remove('activo');
+                    btnDescargar.disabled = false;
+                });
+            }, 100);
         }
 
         function limpiarFormulario() {
